@@ -11,7 +11,7 @@ dotenv.config();
 connectDb();
 
 if (!process.env.REDIS_URL) {
-  throw new Error("REDIS_URL is not defined");
+  throw new Error("REDIS_URL is not defined"); 
 }
 
 export const RedisClient= createClient({
@@ -25,9 +25,12 @@ ConnectToRabbitMQ();
 
 const app =express();
 
+app.use(express.json());
+
+
 const PORT =process.env.PORT;
 
-app.use('api/v1',UserRoutes);
+app.use('/api/v1',UserRoutes);
 
 
 app.listen(PORT,()=>{
