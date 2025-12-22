@@ -3,6 +3,8 @@ import { publishToQueue } from "../config/rabitmq.js";
 import TryCatch from "../config/TryCatch.js";
 import { RedisClient } from "../index.js";
 import { User } from "../model/user.js";
+import type {AuthenticationRequest} from '../middleware/isAuth.js'
+import type {Response} from 'express'
 
 export const loginUser = TryCatch(async(req,res)=>{
     const {email}=req.body;
@@ -77,4 +79,46 @@ res.json({
     token
 });
 
+});
+
+export const getmyProfile = TryCatch(async(req:AuthenticationRequest,res:Response)=>{
+    const user =req.user;
+
+    res.json(user);
+});
+
+export const Updatename = TryCatch(async (req:AuthenticationRequest,res:Response)=>{
+    const user = await User.findById(req.user?._id);
+
+   if(!user){
+    res.status(401).json({
+        message:"User not Found - Login Please"
+    });
+    return;
+   }
+
+   user.name=req.body.name;
+   await user.save();
+
+   const token =generatetoken(user);
+
+   res.json({
+    message:"User Name is Updared",
+    user,
+    token
+   });
+
+
+});
+
+export const getAllUser =TryCatch(async (req:AuthenticationRequest,res:Response)=>{
+    const users = await User.find();
+
+    res.json(users);
+});
+
+export const getAUser =TryCatch(async (req:AuthenticationRequest,res:Response)=>{
+    const user = await User.findById(req.params.id);
+
+    res.json(user);
 })

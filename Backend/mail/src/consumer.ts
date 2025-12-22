@@ -16,13 +16,13 @@ export const startSendotpConsumer = async ()=>{
 
         const queueName="send-otp";
 
-        const channel=connection.createChannel();
+        const channel=await connection.createChannel();
 
-        (await channel).assertQueue(queueName,{durable:true});
+        await  channel.assertQueue(queueName,{durable:true});
 
         console.log("✅ Mail Service consumer started ,listening for otp emails");
 
-       (await channel).consume(queueName,async(msg)=>{
+        channel.consume(queueName,async(msg)=>{
          if(msg){
             try {
                 const {to,subject,body}=JSON.parse(msg.content.toString());
@@ -43,9 +43,9 @@ export const startSendotpConsumer = async ()=>{
                 });
 
                 console.log(`otp is send to ${to}`);
-                (await channel).ack(msg);
+                channel.ack(msg);
             } catch (error) {
-                
+                 console.log("Failed to send the otp");
             }
          }
        })
