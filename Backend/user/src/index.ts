@@ -4,6 +4,7 @@ import connectDb from './config/db.js';
 import {createClient} from 'redis'
 import UserRoutes from './routes/user.js'
 import { ConnectToRabbitMQ } from './config/rabitmq.js';
+import cookieParser from "cookie-parser";
 import cors from 'cors'
 
 
@@ -26,9 +27,20 @@ ConnectToRabbitMQ();
 
 const app =express();
 
+app.use(cors({
+  origin: "http://localhost:3000",
+  credentials: true,
+}));
+
+
+app.options("*", cors());
+
+
 app.use(express.json());
 
-app.use(cors());
+app.use(cookieParser());
+
+
 
 
 const PORT =process.env.PORT;

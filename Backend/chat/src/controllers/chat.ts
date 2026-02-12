@@ -51,12 +51,13 @@ export const getAllChats = TryCatch(async (req: AuthenticationRequest, res: Resp
 
         return;
     }
+       console.log("First Log");
 
     const allChats = await Chat.find({
         users: { $elemMatch: { $eq: userid } }
     }).sort({ updatedAt: -1 });
 
-
+   console.log("Second Log");
 
 
 
@@ -68,10 +69,12 @@ export const getAllChats = TryCatch(async (req: AuthenticationRequest, res: Resp
             seen:false,
             sender:{$ne:userid.toString()},
         });
-
+      
+        console.log("Third Log");
         try {
             const {data} =await axios.get(`${process.env.USER_SERVICE_URL}/api/v1/user/${otheruserid}`);
-             
+            
+            console.log("Fourth Log");
             return {
                 user:data,
                 chat:{
@@ -93,6 +96,8 @@ export const getAllChats = TryCatch(async (req: AuthenticationRequest, res: Resp
             };
         }
     }));
+
+    console.log("Five");
 
 res.json({
     chats:chatWith,
