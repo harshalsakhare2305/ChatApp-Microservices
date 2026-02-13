@@ -23,6 +23,7 @@ interface ChatSlidebarProps {
   selectedUser: string | null;
   setSelectedUser: (userId: string | null) => void;
   handleLogout:()=>void;
+  createChat:(user:User)=>Promise<void>;
 }
 
 function ChatSlidebar({
@@ -36,6 +37,7 @@ function ChatSlidebar({
   selectedUser,
   setSelectedUser,
   handleLogout,
+  createChat,
 }: ChatSlidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -105,13 +107,8 @@ function ChatSlidebar({
                 .map((u) => (
                   <button
                     key={u._id}
-                    onClick={() => {
-                      setSelectedUser(u._id);
-                      setShowAllUsers(false);
-                      setSidebarOpen(false);
-                    }}
                     className="w-full text-left p-4 rounded-lg border border-gray-700 hover:bg-gray-800"
-                  >
+                    onClick={()=>createChat(u)}>
                     <div className="flex items-center gap-3">
                       <UserCircle className="w-6 h-6 text-gray-300" />
                       <span className="font-medium text-white truncate">
