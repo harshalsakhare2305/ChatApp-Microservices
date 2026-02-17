@@ -9,6 +9,8 @@ import toast from 'react-hot-toast';
 import Cookies from 'js-cookie';
 import axios from 'axios';
 import ChatHeader from '@/src/components/ChatHeader';
+import ChatMessages from '@/src/components/ChatMessages';
+import MessageInput from '@/src/components/MessageInput';
 
 export interface Message{
   _id:string;
@@ -17,7 +19,7 @@ export interface Message{
   text?:string;
   image?:{
     url:string;
-    publicId:string;
+    public_id:string;
   };
   messageType:"text"|"image";
   seen:boolean;
@@ -71,10 +73,10 @@ const [typingTimeOut, settypingTimeOut] = useState<NodeJS.Timeout | null>(null);
         },
       });
 
-      setmessages(data.messages);
+      setmessages(data.allMessages);
       setuser(data.user);
       await fetchChats();
-
+   
 
     } catch (error) {
       console.log(error);
@@ -111,6 +113,79 @@ const [typingTimeOut, settypingTimeOut] = useState<NodeJS.Timeout | null>(null);
     }
   }
 
+  const handleMessageSend =async (e:any,imageFile?:File | null )=>{
+    e.preventDefault();
+
+    if(!message.trim() && !imageFile )return ;
+
+
+    if(!selectedUser)return;
+
+    //Socket work
+
+    const token =Cookies.get("token");
+    if(!token){
+      console.log('Token not Found');
+      return ;
+    }
+
+    
+
+    try {
+      const formData=new FormData();
+
+      formData.append("chatId",selectedUser);
+
+      if(message.trim()){
+        formData.append("text",message )
+      }
+
+      if(imageFile){
+        formData.append("image",imageFile);
+      }
+
+
+      const {data} =await axios.post(`${chat_service}/api/v1/message/`,formData, {
+         headers:{
+          Authorization:`Bearer ${token}`,
+          "Content-Type":"multipart/form-data",
+         },
+      });
+
+      setmessages((prev)=>{
+        const currentMessages =prev || [];
+        const messageExists =currentMessages.some((msg)=>msg._id===data.message._id);
+
+         if(!messageExists){
+          return [...currentMessages,data.message]
+         }
+
+         return currentMessages;
+      });
+
+      setmessage("");
+
+     const displayText =imageFile ? "📷 image":message;
+
+
+
+    } catch (error:any) {
+ toast.error(
+    error?.response?.data?.message ||
+    error?.message ||
+    "Something went wrong"
+  );
+    }
+  }
+
+  const handleTyping =(value:string)=>{
+     setmessage(value);
+
+     if(!selectedUser)return ;
+
+     //Socket setup
+  }
+
   useEffect(() => {
     if(selectedUser){
       fetchchat();
@@ -124,8 +199,12 @@ const [typingTimeOut, settypingTimeOut] = useState<NodeJS.Timeout | null>(null);
     <div className='min-h-screen flex bg-gray-900 text-white relative overflow-hidden'>
       <ChatSlidebar sidebarOpen={sidebarOpen} setSidebarOpen={setsidebarOpen} showAllUsers={showAllUser} users={users} loggedInUser={loggedInUser} chats={chats} selectedUser={selectedUser} setSelectedUser={setselectedUser} handleLogout={handleLogout} setShowAllUsers={setshowAllUser} createChat={createChat}/>
 
-      <div className="flex-1 flex-col justify-between p-4 backdrop-blur-xl bg-white/5 border-1 border-white/10 ">
+      <div className="flex-1 flex flex-col justify-between p-4 backdrop-blur-xl bg-white/5 border-1 border-white/10 ">
        <ChatHeader user={user} setSidebarOpen={setsidebarOpen} isTyping={isTyping} />
+
+       <ChatMessages selectedUser={selectedUser} messages={messages} loggedInUser={loggedInUser} />
+
+       <MessageInput selectedUser={selectedUser} message={message} setMessage={handleTyping} handleMessageSend={handleMessageSend}  />
       </div>
     </div>
   )

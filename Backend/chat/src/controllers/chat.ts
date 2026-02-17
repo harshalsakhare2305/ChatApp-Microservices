@@ -107,7 +107,9 @@ res.json({
 export const SendMessage=TryCatch(async (req:AuthenticationRequest,res:Response)=>{
    const senderId=req.user?._id;
    const {chatId,text}=req.body;
-   const imageFile=req.file;
+  const imageFile = req.file as any;
+
+ //console.log(imageFile);
 
    if(!senderId){
     res.status(401).json({
@@ -129,6 +131,8 @@ export const SendMessage=TryCatch(async (req:AuthenticationRequest,res:Response)
     });
     return;
    }
+
+
    
    const chat =await Chat.findById(chatId);
   
@@ -169,9 +173,10 @@ export const SendMessage=TryCatch(async (req:AuthenticationRequest,res:Response)
    };
 
    if(imageFile){
+    console.log("The image file path is ",imageFile.path)
     messageData.image={
-        url:imageFile.path,
-        public_id:imageFile.filename,
+        url:imageFile.secure_url,
+        public_id:imageFile.public_id,
     };
     messageData.messageType="image";
     messageData.text=text || "";
