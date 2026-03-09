@@ -39,10 +39,7 @@ function ChatMessages({ selectedUser, messages, loggedInUser }: ChatMessagesProp
             {uniqueMessages?.map((e, i) => {
               const isSendByMe = e.sender === loggedInUser?._id;
               const uniqueKey = `${e._id}-${i}`;
-              if(e.messageType === 'image'){
-                console.log("IMAGE URL:", e.image?.url);
-                
-              }
+           
               return (
                 <div
                   key={uniqueKey}

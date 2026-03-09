@@ -22,8 +22,9 @@ interface ChatSlidebarProps {
   chats: any[] | null;
   selectedUser: string | null;
   setSelectedUser: (userId: string | null) => void;
-  handleLogout:()=>void;
-  createChat:(user:User)=>Promise<void>;
+  handleLogout: () => void;
+  createChat: (user: User) => Promise<void>;
+  onlineUsers: string[];
 }
 
 function ChatSlidebar({
@@ -38,14 +39,16 @@ function ChatSlidebar({
   setSelectedUser,
   handleLogout,
   createChat,
+  onlineUsers,
 }: ChatSlidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
+  console.log("Its online use",onlineUsers);
+
   return (
     <aside
-      className={`fixed z-20 sm:static top-0 left-0 h-screen w-80 bg-gray-900 border-r border-gray-700 transform ${
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      } sm:translate-x-0 transition-transform duration-300 flex flex-col`}
+      className={`fixed z-20 sm:static top-0 left-0 h-screen w-80 bg-gray-900 border-r border-gray-700 transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        } sm:translate-x-0 transition-transform duration-300 flex flex-col`}
     >
       {/* Header */}
       <div className="p-6 border-b border-gray-700">
@@ -70,11 +73,10 @@ function ChatSlidebar({
 
           <button
             onClick={() => setShowAllUsers((prev) => !prev)}
-            className={`p-2.5 rounded-lg ${
-              showAllUsers
-                ? "bg-red-600 hover:bg-red-700"
-                : "bg-green-600 hover:bg-green-700"
-            } text-white`}
+            className={`p-2.5 rounded-lg ${showAllUsers
+              ? "bg-red-600 hover:bg-red-700"
+              : "bg-green-600 hover:bg-green-700"
+              } text-white`}
           >
             {showAllUsers ? <X size={16} /> : <Plus size={16} />}
           </button>
@@ -105,15 +107,36 @@ function ChatSlidebar({
                     u.name?.toLowerCase().includes(searchQuery.toLowerCase())
                 )
                 .map((u) => (
+                  
                   <button
                     key={u._id}
                     className="w-full text-left p-4 rounded-lg border border-gray-700 hover:bg-gray-800"
-                    onClick={()=>createChat(u)}>
+                    onClick={() => createChat(u)}>
                     <div className="flex items-center gap-3">
-                      <UserCircle className="w-6 h-6 text-gray-300" />
-                      <span className="font-medium text-white truncate">
-                        {u.name}
-                      </span>
+                      <div className="relative">
+                        <UserCircle className="w-6 h-6 text-gray-300" />
+
+                        {
+                        onlineUsers.includes(u._id) && (
+                          <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-gray-900"/>
+                        )
+                       }
+
+                      </div>
+                       
+
+                      <div className="flex-1 min-w-0">
+                        <span className="font-medium text-white truncate">
+                          {u.name}
+                        </span>
+                        <div className="text-xs text-gray-400 mt-0.5">
+                          {/* To show Online offline text */}
+
+                          {
+                            onlineUsers.includes(u._id)? "Online":"Offline"
+                          }
+                        </div>
+                      </div>
                     </div>
                   </button>
                 ))}
@@ -136,16 +159,25 @@ function ChatSlidebar({
                     setSelectedUser(chat.chat._id);
                     setSidebarOpen(false);
                   }}
-                  className={`w-full text-left p-4 rounded-lg border ${
-                    isSelected
-                      ? "bg-blue-600 border-blue-500"
-                      : "border-gray-700 hover:bg-gray-800"
-                  }`}
+                  className={`w-full text-left p-4 rounded-lg border ${isSelected
+                    ? "bg-blue-600 border-blue-500"
+                    : "border-gray-700 hover:bg-gray-800"
+                    }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center">
+                     
+                     <div className="relative">
+                      <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center">
                       <UserCircle className="w-7 h-7 text-gray-300" />
                     </div>
+                    {
+                      onlineUsers.includes(chat.user._id) && (
+                         <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-gray-900"/>
+                      )
+                    }
+                     </div>
+
+                  
 
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-center mb-1">
@@ -202,19 +234,19 @@ function ChatSlidebar({
 
       <div className="p-4 border-t border-gray-700 space-y-2">
         <Link href={'/profile'} className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition-colors">
-        <div className="p-1.5 bg-gray-700 rounded-lg">
-            <UserCircle className="w-4 h-4 text-gray-300"/>
-           
-        </div>
-        <span className="font-medium text-gray-300">Profile</span>
+          <div className="p-1.5 bg-gray-700 rounded-lg">
+            <UserCircle className="w-4 h-4 text-gray-300" />
+
+          </div>
+          <span className="font-medium text-gray-300">Profile</span>
         </Link>
 
         <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-red-600 transition-colors text-red-500 hover:text-white">
-             <div className="p-1.5 bg-red-600 rounded-lg">
-            <LogOut className="w-4 h-4 text-gray-300"/>
-           
-        </div>
-        <span className="font-medium">Logout</span>
+          <div className="p-1.5 bg-red-600 rounded-lg">
+            <LogOut className="w-4 h-4 text-gray-300" />
+
+          </div>
+          <span className="font-medium">Logout</span>
         </button>
       </div>
     </aside>
